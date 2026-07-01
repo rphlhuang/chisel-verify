@@ -1,7 +1,10 @@
 COCOTBTESTS = Adder Mac
 SBT_MAINS = arithmetic.AdderMain arithmetic.MacMain
 
-.PHONY: all chiselsim cocotb gen clean extraclean help
+FORCE ?= 0
+CHISELSIM_CMD = $(if $(filter 1,$(FORCE)),testOnly *,test)
+
+.PHONY: all chtest cocotb gen clean extraclean help
 
 all: chiselsim cocotb
 
@@ -12,8 +15,8 @@ help:
 	@echo "  gen        - re-elaborate every Chisel App to SystemVerilog"
 	@echo "  clean      - clean generated SV, cocotb sim outputs, sbt target"
 
-chiselsim:
-	sbt test
+chtest:
+	sbt "$(CHISELSIM_CMD)"
 
 gen:
 	sbt "$(foreach m,$(SBT_MAINS),; runMain $(m))"
