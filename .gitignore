@@ -2,6 +2,16 @@
 target/
 project/target/
 
-# build 
+# build
 .bsp/
 build/
+
+# generated SystemVerilog from ChiselStage.emitSystemVerilogFile
+generated/
+
+# cocotb outputs
+tests/*/sim_build/
+tests/*/__pycache__/
+tests/*/results.xml
+tests/*/*.vcd
+tests/*/*.fst

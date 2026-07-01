@@ -2,13 +2,13 @@ SIM ?= icarus
 TOPLEVEL_LANG = verilog
 WAVES = 1
 
-HWMODULE = Adder
-SBT_MAIN = arithmetic.AdderMain
+HWMODULE = Mac
+SBT_MAIN = arithmetic.MacMain
 SRCDIR = $(abspath ../../generated/arithmetic)
 DUT_SV = $(SRCDIR)/$(HWMODULE).sv
 VERILOG_SOURCES = $(DUT_SV)
 COCOTB_TOPLEVEL = $(HWMODULE)
-COCOTB_TEST_MODULES = AdderSim
+COCOTB_TEST_MODULES = MacSim
 
 # elaborate Chisel design into SV
 $(DUT_SV):

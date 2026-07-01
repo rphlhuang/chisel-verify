@@ -15,5 +15,13 @@ class Adder(width: Int) extends Module {
 }
 
 object AdderMain extends App {
-  println(ChiselStage.emitSystemVerilog(new Adder(8)))
+  ChiselStage.emitSystemVerilogFile(
+    new Adder(8),
+    args = Array("--target-dir", "generated/arithmetic"),
+    firtoolOpts = Array(
+      "--disable-all-randomization",
+      "--strip-debug-info",
+      "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+    ),
+  )
 }
