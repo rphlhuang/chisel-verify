@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>formal-hitl</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/wavedrom@3/skins/default.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/wavedrom@3/wavedrom.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>formal-hitl <span class="subtitle">— LLM-proposed, engine-decided, human-adjudicated</span></h1>
+  </header>
+
+  <section id="run-panel">
+    <label>Variant
+      <select id="variant-select"></select>
+    </label>
+    <label>Width
+      <input id="width-input" type="number" value="8" min="2" max="32" />
+    </label>
+    <button id="run-button">Run loop</button>
+    <span id="status-line"></span>
+  </section>
+
+  <section id="property-table-section">
+    <table id="property-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Intent</th>
+          <th>SVA body</th>
+          <th>Verdict</th>
+          <th>Adjudication</th>
+        </tr>
+      </thead>
+      <tbody id="property-table-body"></tbody>
+    </table>
+  </section>
+
+  <section id="cex-panel" class="hidden">
+    <h2 id="cex-title"></h2>
+    <div id="cex-summary"></div>
+    <div id="cex-wave"></div>
+    <div id="adjudicate-controls">
+      <button data-decision="real_bug">Real bug in RTL</button>
+      <button data-decision="vacuous">Garbage / vacuous property</button>
+      <button data-decision="missing_assumption">Missing assumption</button>
+      <button data-decision="edge_case_forgot">Edge case I forgot</button>
+      <input id="adjudicate-note" placeholder="optional note" />
+    </div>
+  </section>
+
+  <section id="transcript-section">
+    <h2>Transcript</h2>
+    <pre id="transcript-log"></pre>
+  </section>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

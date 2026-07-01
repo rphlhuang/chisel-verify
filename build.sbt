@@ -15,6 +15,7 @@ lazy val root = (project in file("."))
     ),
     Compile / unmanagedSourceDirectories ++= Seq(
       baseDirectory.value / "chisel-axi-utils" / "src" / "main" / "scala",
+      baseDirectory.value / "formal-hitl" / "dut",
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls",

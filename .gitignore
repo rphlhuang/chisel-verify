@@ -4,3 +4,10 @@ project/target/
 
 # build server
 .bsp/
+# formal-hitl secrets and generated artifacts
+formal-hitl/.env
+formal-hitl/.venv/
+formal-hitl/runs/
+formal-hitl/generated/
+__pycache__/
+*.pyc

@@ -1,0 +1,155 @@
+:root {
+  --proven: #1b8a3d;
+  --failed: #c0392b;
+  --error: #b8860b;
+  --pending: #888;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0 1.5rem 3rem;
+  background: #0f1115;
+  color: #e6e6e6;
+}
+
+header {
+  padding: 1rem 0;
+  border-bottom: 1px solid #2a2d34;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.subtitle {
+  font-weight: normal;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+#run-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+select, input, button {
+  background: #1b1e25;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #666;
+}
+
+#status-line {
+  color: #9ab;
+  font-family: monospace;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #2a2d34;
+  vertical-align: top;
+  font-size: 0.9rem;
+}
+
+th {
+  color: #999;
+  font-weight: normal;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+td.sva {
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-width: 320px;
+}
+
+tr.row-failed {
+  background: rgba(192, 57, 43, 0.12);
+  cursor: pointer;
+}
+
+tr.row-failed:hover {
+  background: rgba(192, 57, 43, 0.22);
+}
+
+tr.row-error {
+  background: rgba(184, 134, 11, 0.12);
+}
+
+.verdict {
+  font-weight: bold;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.verdict-PROVEN { color: var(--proven); }
+.verdict-FAILED { color: var(--failed); }
+.verdict-ERROR { color: var(--error); }
+.verdict-PENDING { color: var(--pending); }
+
+#cex-panel {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #14161c;
+}
+
+#cex-panel.hidden {
+  display: none;
+}
+
+#cex-summary {
+  font-family: monospace;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+}
+
+#adjudicate-controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#adjudicate-note {
+  flex: 1;
+  min-width: 200px;
+}
+
+#transcript-section {
+  margin-top: 2rem;
+}
+
+#transcript-log {
+  background: #14161c;
+  border: 1px solid #2a2d34;
+  border-radius: 6px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+}
