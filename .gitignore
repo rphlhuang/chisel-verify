@@ -1,0 +1,6 @@
+# compiled output
+target/
+project/target/
+
+# build server
+.bsp/
