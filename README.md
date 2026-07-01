@@ -1,6 +1,6 @@
 # chisel-verify
 
-A sandbox for hardware verification. 
+A sandbox for hardware verification of parameterized Chisel modules with ChiselTest and cocotb.
 ChiselTest suites under `src/test/scala/`, and cocotb testbenches under `tests/<Module>/`.
 Each DUT is elaborated to SystemVerilog in `generated/<pkg>/` via `sbt runMain`.
 
