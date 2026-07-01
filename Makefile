@@ -34,4 +34,5 @@ clean:
 	sbt clean
 
 extraclean: clean
+	-pkill -f sbt
 	rm -rf target project/target project/project build .bsp
