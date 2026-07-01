@@ -1,7 +1,9 @@
 ThisBuild / scalaVersion := "2.13.18"
 ThisBuild / version      := "0.1.0"
 ThisBuild / organization := "com.github.rphlhuang"
-ThisBuild / logLevel     := Level.Warn
+ThisBuild / logLevel     := Level.Info
+Test / testOptions       += Tests.Argument(TestFrameworks.ScalaTest, "-oF")
+
 
 val chiselVersion    = "7.13.0"
 val scalatestVersion = "3.2.19"

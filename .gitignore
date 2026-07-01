@@ -2,5 +2,6 @@
 target/
 project/target/
 
-# build server
+# build 
 .bsp/
+build/
