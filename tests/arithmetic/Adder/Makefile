@@ -4,7 +4,7 @@ WAVES = 1
 
 HWMODULE = Adder
 SBT_MAIN = arithmetic.AdderMain
-SRCDIR = $(abspath ../../generated/arithmetic)
+SRCDIR = $(abspath ../../../generated/arithmetic)
 DUT_SV = $(SRCDIR)/$(HWMODULE).sv
 VERILOG_SOURCES = $(DUT_SV)
 COCOTB_TOPLEVEL = $(HWMODULE)
@@ -12,7 +12,7 @@ COCOTB_TEST_MODULES = AdderSim
 
 # elaborate Chisel design into SV
 $(DUT_SV):
-	cd ../.. && sbt "runMain $(SBT_MAIN)"
+	cd ../../.. && sbt "runMain $(SBT_MAIN)"
 
 # force regeneration
 .PHONY: gen

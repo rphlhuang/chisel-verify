@@ -1,0 +1,8 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1783031305" />
+    <testcase name="test_single_transfer" classname="MacSim" file="/Users/rhuang/Documents/chisel-verify/tests/arithmetic/Mac/MacSim.py" lineno="97" time="0.002110004425048828" sim_time_ns="270.0" ratio_time="127961.81694915255" />
+    <testcase name="test_fuzz" classname="MacSim" file="/Users/rhuang/Documents/chisel-verify/tests/arithmetic/Mac/MacSim.py" lineno="122" time="0.04303288459777832" sim_time_ns="16800.0" ratio_time="390399.1135390292" />
+    <testcase name="test_max_throughput" classname="MacSim" file="/Users/rhuang/Documents/chisel-verify/tests/arithmetic/Mac/MacSim.py" lineno="151" time="0.028273820877075195" sim_time_ns="9760.0" ratio_time="345195.65086137835" />
+  </testsuite>
+</testsuites>
