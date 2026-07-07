@@ -6,18 +6,18 @@ SBT_MAINS   := $(foreach d,$(COCOTB_DIRS),$(subst /,.,$(patsubst tests/%,%,$(d))
 FORCE ?= 0
 CHISELSIM_CMD = $(if $(filter 1,$(FORCE)),testOnly *,test)
 
-.PHONY: all chiseltest cocotb gen clean extraclean help
+.PHONY: all chiselsim cocotb gen clean extraclean help
 
 all: chiselsim cocotb
 
 help:
 	@echo "Targets:"
-	@echo "  chiseltest  - run the Chisel scalatest suite (sbt test)"
+	@echo "  chiselsim  - run the Chisel scalatest suite (sbt test)"
 	@echo "  cocotb     - run every cocotb testbench under tests/"
 	@echo "  gen        - re-elaborate every Chisel App to SystemVerilog"
 	@echo "  clean      - clean generated SV, cocotb sim outputs, sbt target"
 
-chiseltest:
+chiselsim:
 	sbt "$(CHISELSIM_CMD)"
 
 gen:

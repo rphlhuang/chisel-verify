@@ -20,9 +20,9 @@ case class MacModuleParams( // Note: do not put default value here
                             // io
                             a_w : Long,
                             b_w : Long,
-                            push_w : Long,
-                            result_r : Long,
-                            status_r : Long,
+                            push_w : Long, // submit a_w and b_w for MAC, 0b1 if last, 0b0 otherwise
+                            result_r : Long, // result of MAC
+                            status_r : Long, // 0b1 if result_r is valid, 0b0 otherwise
                             // constant definition
                             reset_cycles : Int // soft reset cycles
                           ) extends AxiModuleParams with AxiModuleDefParams
@@ -83,24 +83,24 @@ class Axi4LiteMac(p : MacModuleParams, debugprint: Boolean = false)
   val awFire = S.AXI.awvalid && S.AXI.awready
   val wFire = S.AXI.wvalid && S.AXI.wready
 
-  when(awFire) {
+  when (awFire) {
     awHoldValidReg := true.B;
     awHoldAddrReg := S.AXI.awaddr(19, 0) // in case MMIO range is 1MB
   }
 
-  when(wFire) {
+  when (wFire) {
     wHoldValidReg := true.B
     wHoldDataReg := S.AXI.wdata
     wHoldStrbReg := S.AXI.wstrb
   }
 
-  when(doWrite) {
+  when (doWrite) {
 
     val fullWrite = (wHoldStrbReg === "b1111".U) // only accept word writes
     val a = awHoldAddrReg
     val bresp = WireDefault(OKAY.U)
 
-    when(!fullWrite) { 
+    when (!fullWrite) { 
       bresp := SLVERR.U // support full write only for this example
     }.otherwise { 
       // if not strobe or reset, write to internal reg or start calc
@@ -130,16 +130,17 @@ class Axi4LiteMac(p : MacModuleParams, debugprint: Boolean = false)
   dut.io.in.bits.a := aReg
   dut.io.in.bits.b := bReg
   dut.io.in.bits.last := lastReg
-  when(pushPendingReg && dut.io.in.fire) {
+  when (pushPendingReg && dut.io.in.fire) {
     pushPendingReg := false.B
   }
 
   // B resp reset
-  when(bvalidReg && S.AXI.bready) {
+  when (bvalidReg && S.AXI.bready) {
     bvalidReg := false.B
   }
   S.AXI.bvalid := bvalidReg
   S.AXI.bresp := brespReg
+
 
   // -----------------------------
   // Read path: AR -> R
@@ -149,59 +150,48 @@ class Axi4LiteMac(p : MacModuleParams, debugprint: Boolean = false)
   val rvalidReg = RegInit(false.B)
   val rrespReg = RegInit(0.U(2.W))
 
-  // object RState extends ChiselEnum {
-  //   val READY2READ, COMPLETED = Value
-  // }
+  val dutDataReg = Reg(UInt(p.accWidth_p.W))
+  val dutValidReg = RegInit(false.B)
 
-  // val rstateReg = RegInit(RState.READY2READ)
+  // this <-> dut
+  // backpressure on dut, accept on handshake
+  dut.io.out.ready := !dutValidReg
+  when (dut.io.out.fire) {
+    dutDataReg := dut.io.out.bits
+    dutValidReg := true.B
+  }
 
-  S.AXI.arready := rstateReg === RState.READY2READ
-  S.AXI.rvalid := rstateReg === RState.COMPLETED
+  // master -AR-> this
+  S.AXI.arready := !rvalidReg
+  val arFire = S.AXI.arvalid && S.AXI.arready
+  when (arFire) {
+    rvalidReg := true.B
+    rrespReg := OKAY.U
+    val a = S.AXI.araddr(19, 0)
+    when (a === p.result_r.U) {
+      rdataReg := dutDataReg
+      dutValidReg := false.B
+    }.elsewhen (a === p.status_r.U) {
+      rdataReg := dutValidReg
+    }.otherwise {
+      rrespReg := SLVERR.U
+    }
+  }
+
+  // master <-R- this
+  S.AXI.rvalid := rvalidReg
   S.AXI.rdata := rdataReg
   S.AXI.rresp := rrespReg
-
-  val arFire = S.AXI.arvalid && S.AXI.arready
-
-  // when(arFire) {
-  //   if (debugprint) printf("%d: arFire: %x\n", cycles, S.AXI.araddr)
-  //   val araddr = S.AXI.araddr(19, 0) // 1MB range
-  //   rrespReg := OKAY.U
-
-  //   val rstate = WireDefault(RState.READY2READ)
-
-  //   when(araddr === p.const1_r.U) {
-  //     rdataReg := p.const1.U
-  //     rstate := RState.COMPLETED
-  //   }.elsewhen(araddr === p.const2_r.U) {
-  //     rdataReg := p.const2.U
-  //     rstate := RState.COMPLETED
-  //   }.elsewhen(araddr === p.soft_reset_rw.U) {
-  //     rdataReg := softResetDoneReg
-  //     rstate := RState.COMPLETED
-  //   }.elsewhen(araddr === p.dut_rw.U) {
-  //     rdataReg := dut.out
-  //     rstate := RState.COMPLETED
-  //   }.otherwise {
-  //     if (debugprint) printf("%d: bad read req %d\n", cycles, araddr)
-  //     // rrespReg := SLVERR.U // with this, the host can only read 0xffffffff for any addresses on AVED
-  //     rdataReg := 0xbad00000L.U | S.AXI.araddr(31, 0)
-  //     if (debugprint) printf(cf"arFire otherwise: addr=${S.AXI.araddr}%16x\n")
-  //     rstate := RState.COMPLETED
-  //   }
-  //   rstateReg := rstate
-  // }
-
-  // when(rstateReg === RState.COMPLETED && S.AXI.rready) {
-  //   rstateReg := RState.READY2READ
-  // }
+  val rFire = S.AXI.rvalid && S.AXI.rready
+  when (rFire) {
+    rvalidReg := false.B
+  }
 }
 
 object Axi4LiteMac extends App {
-  val const1 : Long = 0xdeadbeefL // module id
-  val const2 : Long = getGitHash
 
   val p = checkParamEnv(
-    MacModuleParams.default(const1 = const1, const2 = const2),
+    MacModuleParams.default(),
     "CMD_MODULE_PARAMS")
 
   EmitVerilog.generate(new Axi4LiteMac(p, debugprint=true), p)

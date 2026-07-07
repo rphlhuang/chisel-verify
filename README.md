@@ -10,11 +10,11 @@ Run from the repo root:
 
 | Target       | What it does                                                  |
 | ------------ | ------------------------------------------------------------- |
-| `make chiseltest`    | Runs the ChiselTest / scalatest suite (`sbt test`).       |
-| `make chiseltest FORCE=1`    | Forces ChiselTest, even if already up to date.       |
+| `make chiselsim` | Runs ChiselSim / scalatest suite (`sbt test`).            |
+| `make chiselsim FORCE=1`|.    Forces ChiselSim, even if already up to date.  |
 | `make gen`       | Elaborates every DUT to `generated/<pkg>/<Module>.sv` in one sbt session. |
 | `make cocotb`    | Runs every cocotb testbench under `tests/`.               |
-| `make`           | Both `chiseltest` and `cocotb`.                            |
+| `make`           | Both `chiseltest` and `cocotb`.                           |
 | `make clean`     | Cleans generated SV, cocotb outputs, and `sbt clean`.     |
 | `make extraclean`| `make clean`, and ensures all build artifacts clean.      |
 
