@@ -1,8 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1783031306" />
-    <testcase name="test_zero" classname="AdderSim" file="/Users/rhuang/Documents/chisel-verify/tests/Adder/AdderSim.py" lineno="1" time="0.0012478828430175781" sim_time_ns="1.0" ratio_time="801.3572793274742" />
-    <testcase name="test_max_value" classname="AdderSim" file="/Users/rhuang/Documents/chisel-verify/tests/Adder/AdderSim.py" lineno="1" time="4.38690185546875e-05" sim_time_ns="1.0" ratio_time="22795.130434782608" />
-    <testcase name="test_fuzz" classname="AdderSim" file="/Users/rhuang/Documents/chisel-verify/tests/Adder/AdderSim.py" lineno="1" time="0.002988100051879883" sim_time_ns="200.0" ratio_time="66932.16308944387" />
-  </testsuite>
-</testsuites>

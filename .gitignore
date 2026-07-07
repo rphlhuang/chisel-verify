@@ -10,11 +10,11 @@ build/
 generated/
 
 # cocotb outputs
-tests/*/sim_build/
-tests/*/__pycache__/
-tests/*/results.xml
-tests/*/*.vcd
-tests/*/*.fst
+tests/*/*/sim_build/
+tests/*/*/__pycache__/
+tests/*/*/results.xml
+tests/*/*/*.vcd
+tests/*/*/*.fst
 
 # python
 venv/
