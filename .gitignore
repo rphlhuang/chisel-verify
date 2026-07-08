@@ -15,6 +15,7 @@ tests/*/*/__pycache__/
 tests/*/*/results.xml
 tests/*/*/*.vcd
 tests/*/*/*.fst
+tests/*/*/*.log
 
 # python
 venv/
