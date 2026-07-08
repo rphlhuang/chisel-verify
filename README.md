@@ -32,3 +32,8 @@ Per-DUT, from `tests/<Module>/`:
 | `make gen`   | Force-regenerates just `<Module>.sv`.                         |
 | `make clean` | Cleans this test dir's cocotb outputs.                        |
 | `make sim`   | Created by cocotb.                                            |
+
+## Testbench Waveforms
+
+- For cocotb tests using Icarus (i.e. `SIM ?= icarus`), results are in <MODULENAME>/sim_build/<MODULENAME>.fst
+- For cocotb tests using Verilator, results are in <MODULENAME>/dump.vcd
