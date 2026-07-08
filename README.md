@@ -4,6 +4,13 @@ A sandbox for hardware verification of parameterized Chisel modules with ChiselT
 ChiselTest suites under `src/test/scala/`, and cocotb testbenches under `tests/<Module>/`.
 Each DUT is elaborated to SystemVerilog in `generated/<pkg>/` via `sbt runMain`.
 
+## Requirements
+Install all requirements from `requirements.txt` and submodule python library (note that Python version must be <= 3.13):
+
+- `python3.12 -m venv venv` or any other Python version before it
+- `pip3 install -r requirements.txt`
+- `pip3 install -e chisel-axi-utils/python`
+
 ## Makefile
 
 Run from the repo root:

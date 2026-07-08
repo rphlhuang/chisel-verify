@@ -188,7 +188,7 @@ class Axi4LiteMac(p : MacModuleParams, debugprint: Boolean = false)
   }
 }
 
-object Axi4LiteMac extends App {
+object Axi4LiteMacMain extends App {
 
   val p = checkParamEnv(
     MacModuleParams.default(),
