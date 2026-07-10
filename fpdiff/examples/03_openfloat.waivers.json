@@ -1,0 +1,73 @@
+[
+  {
+    "id": "no-subnormal-inputs",
+    "kind": "input_class",
+    "cls": "subnormal",
+    "operands": [
+      "a",
+      "b"
+    ],
+    "reason": "OpenFloat saturates biased exponents to >=1; subnormal inputs are treated as min-normals (finding #3/#5/#6 exemplars). Unsupported by design; flagged as bug #6 where it corrupts magnitude.",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "no-nan-inputs",
+    "kind": "input_class",
+    "cls": "nan",
+    "operands": [
+      "a",
+      "b"
+    ],
+    "reason": "OpenFloat has no NaN detection; exponent saturation maps NaN to max-normal magnitude (findings #1/#8/#10/#11).",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "no-inf-inputs",
+    "kind": "input_class",
+    "cls": "inf",
+    "operands": [
+      "a",
+      "b"
+    ],
+    "reason": "OpenFloat has no infinity handling; same exponent saturation as NaN (findings #2/#7/#9/#12).",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "no-zero-inputs",
+    "kind": "input_class",
+    "cls": "zero",
+    "operands": [
+      "a",
+      "b"
+    ],
+    "reason": "BUG, not a deviation: 0+0 returns 2.35e-38 (finding #13, min-normal*2 from exponent saturation). Excluded here only to characterize the remaining input space; tracked as open bug.",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "ulp-1",
+    "kind": "output_ulp_tolerance",
+    "ulp": 1,
+    "reason": "OpenFloat rounds by truncation, not RNE; accept 1 ulp on well-conditioned adds. NOTE: does NOT bound cancellation cases -- see open bug: near-cancellation amplifies truncation error without bound (2^19-ulp exemplar found at ulp<=16 sweep).",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "no-exact-cancellation",
+    "kind": "input_expr",
+    "expr": "!((a[30:0] == b[30:0]) && (a[31] != b[31]))",
+    "reason": "BUG, not a deviation: x + (-x) yields a large normal (3.17e+29 at e=0xf9) instead of +0; residual scales with operand exponent. Excluded only to characterize the rest; tracked as open bug.",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  },
+  {
+    "id": "flush-subnormal-outputs",
+    "kind": "output_subnormal_flush",
+    "reason": "OpenFloat cannot produce subnormal outputs; results that gradually underflow in IEEE are clamped to zero or min-normal of the same sign (finding: -6.02e-36 + 6.02e-36 -> min-normal instead of 9.18e-41).",
+    "signed_off_by": "rhuang",
+    "date": "2026-07-10"
+  }
+]

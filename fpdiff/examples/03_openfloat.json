@@ -1,0 +1,20 @@
+{
+  "name": "openfloat_add32_vs_hardfloat",
+  "format": {"exp": 8, "sig": 24},
+  "gold": {
+    "files": ["rtl/FPADD_8_24.sv"],
+    "top": "FPADD_8_24",
+    "ports": {"a": "io_in_a", "b": "io_in_b", "out": "io_out", "clock": "clock", "reset": "reset"},
+    "latency": 0
+  },
+  "gate": {
+    "files": ["rtl/FP_add_32_1.sv"],
+    "top": "FP_add_32_1",
+    "ports": {"a": "io_in_a", "b": "io_in_b", "out": "io_out_s", "clock": "clock", "reset": "reset",
+              "valid_in": "io_in_valid", "en": "io_in_en", "valid_out": "io_out_valid"},
+    "latency": 1
+  },
+  "waivers": "03_openfloat.waivers.json",
+  "engine": "btormc",
+  "kmax": 6
+}
