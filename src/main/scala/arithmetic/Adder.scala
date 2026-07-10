@@ -2,6 +2,8 @@
 package arithmetic
 
 import chisel3._
+import chisel3.ltl._
+import chisel3.ltl.Sequence._
 import circt.stage.ChiselStage
 
 class Adder(width: Int) extends Module {
@@ -12,6 +14,9 @@ class Adder(width: Int) extends Module {
     })
 
     io.s := io.a +& io.b
+
+    
+    AssertProperty((io.a === io.b) |-> (io.s(0) === 0.U), label = Some("equal_inputs_even_sum"))
 }
 
 object AdderMain extends App {
@@ -23,5 +28,25 @@ object AdderMain extends App {
       "--strip-debug-info",
       "--lowering-options=disallowLocalVariables,disallowPackedArrays",
     ),
+  )
+}
+
+object AdderFormalMain extends App {
+  ChiselStage.emitSystemVerilogFile(
+    new Adder(8),
+    args = Array("--target-dir", "generated/arithmetic/formal"),
+    firtoolOpts = Array(
+      "--disable-all-randomization",
+      "--strip-debug-info",
+      "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+      "--enable-layers=Verification,Verification.Assert,Verification.Assume,Verification.Cover",
+    ),
+  )
+}
+
+object AdderChirrtlMain extends App {
+  ChiselStage.emitCHIRRTLFile(
+    new Adder(8),
+    args = Array("--target-dir", "generated/arithmetic/chirrtl")
   )
 }

@@ -1,0 +1,16 @@
+# Run from the repo root:  sby -f formal/adder.sby
+# (re-generate the SV first with:  sbt "runMain arithmetic.AdderFormalMain")
+
+[options]
+mode bmc
+depth 20
+
+[engines]
+smtbmc
+
+[script]
+read_verilog -sv -formal Adder.sv
+prep -top Adder
+
+[files]
+generated/arithmetic/formal/Adder.sv

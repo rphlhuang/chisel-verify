@@ -1,0 +1,8 @@
+# running in formal/adder/src/
+read_verilog -sv -formal Adder.sv
+prep -top Adder
+
+hierarchy -smtcheck
+rename -witness
+write_jny -no-connections ../model/design.json
+write_rtlil ../model/design.il
