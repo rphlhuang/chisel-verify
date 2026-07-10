@@ -1,0 +1,132 @@
+{
+  "$schema": "https://raw.githubusercontent.com/YosysHQ/yosys/main/misc/jny.schema.json",
+  "generator": "Yosys 0.66+228 (git sha1 95b5e4360-dirty, Release, Clang /usr/local/osxcross/target/bin/aarch64-apple-darwin23.5-clang++ 18.1.8)",
+  "version": "0.0.1",
+  "invocation": "write_jny -no-connections ../model/design.json ",
+  "features": ["attributes", "properties"],
+  "modules": [
+      {
+        "name": "Adder",
+        "cell_sorts": [
+          {
+            "type": "$check",
+            "ports": [
+                {
+                  "name": "A",
+                  "direction": "io",
+                  "range": [0, 0]
+                },
+                {
+                  "name": "ARGS",
+                  "direction": "io",
+                  "range": [0, 0]
+                },
+                {
+                  "name": "EN",
+                  "direction": "io",
+                  "range": [0, 0]
+                },
+                {
+                  "name": "TRG",
+                  "direction": "io",
+                  "range": [0, 0]
+                }
+            ],
+            "cells": [
+                {
+                  "name": "_witness_.check_assert_Adder_sv_18_7",
+                  "attributes": {
+                    "hdlname": "_witness_ check_assert_Adder_sv_18_7",
+                    "src": "Adder.sv:18.66-19.40"
+                  },
+                  "parameters": {
+                    "ARGS_WIDTH": "00000000000000000000000000000000",
+                    "FLAVOR": "assert",
+                    "FORMAT": true,
+                    "PRIORITY": "00000000000000000000000000000000",
+                    "TRG_ENABLE": "00000000000000000000000000000000",
+                    "TRG_POLARITY": "00000000000000000000000000000000",
+                    "TRG_WIDTH": "00000000000000000000000000000000"
+                  }
+                }
+            ]
+          },
+          {
+            "type": "$eq",
+            "ports": [
+                {
+                  "name": "A",
+                  "direction": "io",
+                  "range": [9, 0]
+                },
+                {
+                  "name": "B",
+                  "direction": "io",
+                  "range": [9, 0]
+                },
+                {
+                  "name": "Y",
+                  "direction": "",
+                  "range": [0, 0]
+                }
+            ],
+            "cells": [
+                {
+                  "name": "$eq$Adder.sv:19$9",
+                  "attributes": {
+                    "src": "Adder.sv:19.20-19.39"
+                  },
+                  "parameters": {
+                    "A_SIGNED": "00000000000000000000000000000000",
+                    "A_WIDTH": "00000000000000000000000000001001",
+                    "B_SIGNED": "00000000000000000000000000000000",
+                    "B_WIDTH": "00000000000000000000000000001001",
+                    "Y_WIDTH": "00000000000000000000000000000001"
+                  }
+                }
+            ]
+          },
+          {
+            "type": "$add",
+            "ports": [
+                {
+                  "name": "A",
+                  "direction": "io",
+                  "range": [8, 0]
+                },
+                {
+                  "name": "B",
+                  "direction": "io",
+                  "range": [8, 0]
+                },
+                {
+                  "name": "Y",
+                  "direction": "",
+                  "range": [9, 0]
+                }
+            ],
+            "cells": [
+                {
+                  "name": "$add$Adder.sv:19$8",
+                  "attributes": {
+                    "src": "Adder.sv:19.20-19.31"
+                  },
+                  "parameters": {
+                    "A_SIGNED": "00000000000000000000000000000000",
+                    "A_WIDTH": "00000000000000000000000000001000",
+                    "B_SIGNED": "00000000000000000000000000000000",
+                    "B_WIDTH": "00000000000000000000000000001000",
+                    "Y_WIDTH": "00000000000000000000000000001001"
+                  }
+                }
+            ]
+          }
+        ],
+        "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "top": "00000000000000000000000000000001",
+            "src": "Adder.sv:2.1-21.10"
+        }
+      }
+  ]
+}
