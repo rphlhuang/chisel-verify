@@ -1,0 +1,8 @@
+read_verilog -sv -formal -DTEMPO_FORMAL /Users/rhuang/Documents/chisel-verify/tempo/examples/axi4litemac/rtl/Axi4LiteMac.sv
+read_verilog -sv -formal -DTEMPO_FORMAL /Users/rhuang/Documents/chisel-verify/tempo/examples/axi4litemac/rtl/Mac.sv
+read_verilog -sv -formal -DTEMPO_FORMAL /Users/rhuang/Documents/chisel-verify/tempo/examples/axi4litemac/axi4litemac_assumed.out/monitor.v
+read_verilog -sv -formal -DTEMPO_FORMAL /Users/rhuang/Documents/chisel-verify/tempo/examples/axi4litemac/axi4litemac_assumed.out/top.v
+prep -top tempo_top
+flatten
+chformal -lower
+write_btor -x /Users/rhuang/Documents/chisel-verify/tempo/examples/axi4litemac/axi4litemac_assumed.out/design.btor
