@@ -14,9 +14,9 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from tempo.ast import Project
+from experiments.tempo.tempo.ast import Project
 from project import OBLIGATIONS, SIGNALS, HERE
-from project_assumed import ASSUMPTIONS
+from experiments.tempo.examples.axi4litemac.project_assumed import ASSUMPTIONS
 
 PROJECT = Project(
     name="axi4litemac_mutant",
