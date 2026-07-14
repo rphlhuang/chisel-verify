@@ -19,3 +19,6 @@ tests/*/*/*.log
 
 # python
 venv/
+
+# macos
+.DS_STORE
