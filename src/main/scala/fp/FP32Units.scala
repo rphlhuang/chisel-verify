@@ -64,7 +64,7 @@ object FPAddMain extends App {
 
 object FPSubMain extends App {
   ChiselStage.emitSystemVerilogFile(
-    new FPCombUnit(8, 24, FPOpMode.SUB), // 8 exp, (23 + 1 implcit leading bit) significand = single-precision
+    new FPCombUnit(8, 24, FPOpMode.SUB),
     args = Array("--target-dir", "generated/fp"),
     firtoolOpts = Array(
       "--disable-all-randomization",
@@ -76,7 +76,7 @@ object FPSubMain extends App {
 
 object FPMulMain extends App {
   ChiselStage.emitSystemVerilogFile(
-    new FPCombUnit(8, 24, FPOpMode.MUL), // 8 exp, (23 + 1 implcit leading bit) significand = single-precision
+    new FPCombUnit(8, 24, FPOpMode.MUL),
     args = Array("--target-dir", "generated/fp"),
     firtoolOpts = Array(
       "--disable-all-randomization",
