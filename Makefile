@@ -1,7 +1,10 @@
 # auto-discover every cocotb testbench dir: tests/<package>/<Module>/Makefile
 COCOTB_DIRS := $(patsubst %/Makefile,%,$(shell find tests -name Makefile))
-# each dir's SBT App object, by convention: tests/<package>/<Module> -> <package>.<Module>Main
-SBT_MAINS   := $(foreach d,$(COCOTB_DIRS),$(subst /,.,$(patsubst tests/%,%,$(d)))Main)
+
+SBT_MAINS := $(shell grep -rlE '^[[:space:]]*object [A-Za-z0-9_]+Main extends App' src/main/scala | while read -r f; do \
+	pkg=$$(grep -m1 -E '^package ' "$$f" | sed -E 's/^package[[:space:]]+//'); \
+	grep -oE '^[[:space:]]*object [A-Za-z0-9_]+Main' "$$f" | sed -E "s/^[[:space:]]*object /$$pkg./"; \
+	done | sort -u)
 
 FORCE ?= 0
 CHISELSIM_CMD = $(if $(filter 1,$(FORCE)),testOnly *,test)
