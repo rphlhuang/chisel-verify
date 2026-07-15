@@ -22,3 +22,6 @@ venv/
 
 # macos
 .DS_STORE
+
+# claude
+.claude/

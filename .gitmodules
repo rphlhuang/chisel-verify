@@ -1,3 +1,6 @@
 [submodule "chisel-axi-utils"]
 	path = chisel-axi-utils
 	url = git@github.com:hwspec/chisel-axi-utils.git
+[submodule "berkeley-hardfloat"]
+	path = berkeley-hardfloat
+	url = https://github.com/ucb-bar/berkeley-hardfloat.git
