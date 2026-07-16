@@ -11,13 +11,14 @@ object FPOpMode {
   case object ADD extends Mode
   case object SUB extends Mode
   case object MUL extends Mode
+  case object DIVSQRT extends Mode
 }
 
 class FPCombUnit(val expW: Int = 8, val sigW: Int = 24, val mode: FPOpMode.Mode = FPOpMode.ADD) extends Module {
   val bw = expW + sigW
   val io = IO(new Bundle {
-    val in_a  = Input(UInt(bw.W))
-    val in_b  = Input(UInt(bw.W))
+    val in_a = Input(UInt(bw.W))
+    val in_b = Input(UInt(bw.W))
     val out = Output(UInt(bw.W))
     val exceptionFlags = Output(UInt(5.W))
   })
@@ -49,6 +50,74 @@ class FPCombUnit(val expW: Int = 8, val sigW: Int = 24, val mode: FPOpMode.Mode 
   }
 }
 
+class FPSeqIn(val bw: Int) extends Bundle {
+  val a = Input(UInt(bw.W))
+  val b = Input(UInt(bw.W))
+  val sqrtOp = Input(Bool())
+}
+
+class FPSeqOut(val bw: Int) extends Bundle {
+  val data = Output(UInt(bw.W))
+  val exceptionFlags = Output(UInt(5.W))
+}
+
+class FPSeqUnit(val expW: Int = 8, val sigW: Int = 24, val mode: FPOpMode.Mode = FPOpMode.DIVSQRT) extends Module {
+  val bw = expW + sigW
+  val io = IO(new Bundle {
+    val in = Flipped(Decoupled(new FPSeqIn(bw)))
+    val out = Decoupled(new FPSeqOut(bw))
+  })
+
+  require(mode == FPOpMode.DIVSQRT,
+          "mode must be DIVSQRT for FPSeqUnit"
+         )
+
+    // val inReady        = Output(Bool())
+    // val inValid        = Input(Bool())
+    // val sqrtOp         = Input(Bool())
+    // val a              = Input(new RawFloat(expWidth, sigWidth))
+    // val b              = Input(new RawFloat(expWidth, sigWidth))
+    // val roundingMode   = Input(UInt(3.W))
+    // *--------------------------------------------------------------------*/
+    // val rawOutValid_div  = Output(Bool())
+    // val rawOutValid_sqrt = Output(Bool())
+    // val roundingModeOut  = Output(UInt(3.W))
+    // val invalidExc       = Output(Bool())
+    // val infiniteExc      = Output(Bool())
+    // val rawOut = Output(new RawFloat(expWidth, sigWidth + 2))
+  override def desiredName = s"FP${mode}_${expW}_$sigW"
+  val opRecFN = Module(new DivSqrtRecFN_small(expW, sigW, options = 0))
+
+  // output skid reg (allows for backpressure)
+  val buf = Reg(UInt(bw.W))
+  val bufFull = RegInit(false.B)
+  val dutValid = opRecFN.io.outValid_sqrt || opRecFN.io.outValid_div
+  when (dutValid && !io.out.ready) {
+    buf := fNFromRecFN(expW, sigW, opRecFN.io.out)
+    bufFull := true.B
+  }
+  when (io.out.fire) {
+    bufFull := false.B
+  }
+
+  // upstream
+  io.in.ready := opRecFN.io.inReady && !bufFull
+  opRecFN.io.inValid := io.in.valid
+  opRecFN.io.sqrtOp := io.in.bits.sqrtOp
+  opRecFN.io.a := recFNFromFN(expW, sigW, io.in.bits.a)
+  when (io.in.bits.sqrtOp) {
+    opRecFN.io.b := DontCare
+  }.otherwise {
+    opRecFN.io.b := recFNFromFN(expW, sigW, io.in.bits.b)
+  }
+  opRecFN.io.roundingMode := 0.U
+  opRecFN.io.detectTininess := 1.U
+  
+  // downstream (skip roundingModeOut for now)
+  io.out.valid := dutValid || bufFull
+  io.out.bits.data := Mux(bufFull, buf, fNFromRecFN(expW, sigW, opRecFN.io.out))
+  io.out.bits.exceptionFlags := opRecFN.io.exceptionFlags 
+}
 
 object FPAddMain extends App {
   ChiselStage.emitSystemVerilogFile(
@@ -77,6 +146,18 @@ object FPSubMain extends App {
 object FPMulMain extends App {
   ChiselStage.emitSystemVerilogFile(
     new FPCombUnit(8, 24, FPOpMode.MUL),
+    args = Array("--target-dir", "generated/fp"),
+    firtoolOpts = Array(
+      "--disable-all-randomization",
+      "--strip-debug-info",
+      "--lowering-options=disallowLocalVariables,disallowPackedArrays",
+    ),
+  )
+}
+
+object FPDivSqrtMain extends App {
+  ChiselStage.emitSystemVerilogFile(
+    new FPSeqUnit(8, 24, FPOpMode.DIVSQRT), 
     args = Array("--target-dir", "generated/fp"),
     firtoolOpts = Array(
       "--disable-all-randomization",
