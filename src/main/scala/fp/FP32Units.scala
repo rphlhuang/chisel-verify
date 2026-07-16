@@ -68,23 +68,7 @@ class FPSeqUnit(val expW: Int = 8, val sigW: Int = 24, val mode: FPOpMode.Mode =
     val out = Decoupled(new FPSeqOut(bw))
   })
 
-  require(mode == FPOpMode.DIVSQRT,
-          "mode must be DIVSQRT for FPSeqUnit"
-         )
-
-    // val inReady        = Output(Bool())
-    // val inValid        = Input(Bool())
-    // val sqrtOp         = Input(Bool())
-    // val a              = Input(new RawFloat(expWidth, sigWidth))
-    // val b              = Input(new RawFloat(expWidth, sigWidth))
-    // val roundingMode   = Input(UInt(3.W))
-    // *--------------------------------------------------------------------*/
-    // val rawOutValid_div  = Output(Bool())
-    // val rawOutValid_sqrt = Output(Bool())
-    // val roundingModeOut  = Output(UInt(3.W))
-    // val invalidExc       = Output(Bool())
-    // val infiniteExc      = Output(Bool())
-    // val rawOut = Output(new RawFloat(expWidth, sigWidth + 2))
+  require(mode == FPOpMode.DIVSQRT, "mode must be DIVSQRT for FPSeqUnit")
   override def desiredName = s"FP${mode}_${expW}_$sigW"
   val opRecFN = Module(new DivSqrtRecFN_small(expW, sigW, options = 0))
 
