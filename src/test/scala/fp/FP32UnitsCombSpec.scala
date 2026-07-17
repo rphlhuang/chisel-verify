@@ -7,7 +7,7 @@ import chisel3.simulator.scalatest.ChiselSim
 import org.scalatest.flatspec.AnyFlatSpec
 
 // Golden reference: Java Float arithmetic is IEEE-754 single-precision round-nearest-even,
-// canonical NaN result becomes 0x7FC00000 which is what the NaN hardfloat/RISCV produce.
+// canonical NaN result becomes 0x7FC00000 which is what the NaN hardfloat/RISCV produce
 trait FP32TestUtil { this: ChiselSim =>
   // bit <-> float helpers
   protected def toF(bits: Int): Float = java.lang.Float.intBitsToFloat(bits)
@@ -19,6 +19,11 @@ trait FP32TestUtil { this: ChiselSim =>
   // peek + assert so a failure prints "expected 0x.., got 0x.." in hex.
   protected def expectHex(actual: UInt, expected: Int, clue: String): Unit = {
     val got = actual.peek().litValue
+    val exp = expected.toLong & 0xFFFFFFFFL
+    assert(got == exp, f"$clue: expected 0x$exp%08x, got 0x$got%08x")
+  }
+  protected def expectHex(actual: BigInt, expected: Int, clue: String): Unit = {
+    val got = actual
     val exp = expected.toLong & 0xFFFFFFFFL
     assert(got == exp, f"$clue: expected 0x$exp%08x, got 0x$got%08x")
   }
