@@ -59,4 +59,15 @@ class FP32UnitsSeqSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
     }
     info(s"DIV: ${vectors.length} vectors passed")
   }
+
+  "FPSeqUnit SQRT" should "match IEEE-754 round-nearest-even on directed vectors" in {
+    simulate(new FPSeqUnit(8, 24, FPOpMode.DIVSQRT)) { dut =>
+      for ((label, aBits, bBits) <- vectors) {
+        val expected = canon(refSeq(toF(aBits), toF(bBits), sqrtOp = true))
+        enqueue(dut, aBits, bBits, sqrtOp = true, clue = s"SQRT($label)")
+        dequeue(dut, expected, s"SQRT($label)")
+      }
+    }
+    info(s"SQRT: ${vectors.length} vectors passed")
+  }
 }
