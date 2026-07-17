@@ -192,7 +192,7 @@ object Axi4LiteMacMain extends App {
 
   val p = checkParamEnv(
     MacModuleParams.default(),
-    "CMD_MODULE_PARAMS")
+    "MAC_MODULE_PARAMS")
 
   EmitVerilog.generate(new Axi4LiteMac(p, debugprint=true), p)
 }
