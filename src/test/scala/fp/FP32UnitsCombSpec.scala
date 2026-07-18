@@ -10,12 +10,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 // canonical NaN result becomes 0x7FC00000 which is what the NaN hardfloat/RISCV produce
 trait FP32TestUtil { this: ChiselSim =>
   // bit <-> float helpers
-  protected def toF(bits: Int): Float = java.lang.Float.intBitsToFloat(bits)
-  protected def u32(bits: Int): UInt = (bits.toLong & 0xFFFFFFFFL).U(32.W)
+  protected def intToFloat(bits: Int): Float = java.lang.Float.intBitsToFloat(bits)
+  protected def intToUInt32(bits: Int): UInt = (bits.toLong & 0xFFFFFFFFL).U(32.W)
   // floatToIntBits to "canonicalize", which only affects NaN (every NaN -> 0x7FC00000); use for expected results
-  protected def canon(x: Float): Int = java.lang.Float.floatToIntBits(x)
+  protected def canonicalize(x: Float): Int = java.lang.Float.floatToIntBits(x)
   // floatToRawIntBits does straight conversion without canonicalizing; use for stimuli
-  protected def f(x: Float): Int = java.lang.Float.floatToRawIntBits(x)
+  protected def floatToRawInt(x: Float): Int = java.lang.Float.floatToRawIntBits(x)
   // peek + assert so a failure prints "expected 0x.., got 0x.." in hex.
   protected def expectHex(actual: UInt, expected: Int, clue: String): Unit = {
     val got = actual.peek().litValue
@@ -39,22 +39,22 @@ trait FP32TestUtil { this: ChiselSim =>
   protected val MinSubnrm  = 0x00000001 // smallest positive subnormal
   protected val MaxSubnrm  = 0x007fffff // largest subnormal
   protected val MinNormal  = 0x00800000 // smallest positive normal
-  protected val TwoToThe24 = f(16777216.0f) // 2^24 --> incs of 2.0 here so 2^24+1 tests testing round to even
+  protected val TwoToThe24 = floatToRawInt(16777216.0f) // 2^24 --> incs of 2.0 here so 2^24+1 tests testing round to even
 
   // test vectors
   protected val vectors: Seq[(String, Int, Int)] = Seq(
     ("+0 , +0",                     PosZero,    PosZero),
     ("+0 , -0",                     PosZero,    NegZero),
     ("-0 , -0",                     NegZero,    NegZero),
-    ("+inf , 1.0",                  PosInf,     f(1.0f)),
+    ("+inf , 1.0",                  PosInf,     floatToRawInt(1.0f)),
     ("+inf , -inf",                 PosInf,     NegInf),
-    ("1.0 , qNaN",                  f(1.0f),    QNaN),
-    ("1.0 , sNaN",                  f(1.0f),    SNaN),
+    ("1.0 , qNaN",                  floatToRawInt(1.0f),    QNaN),
+    ("1.0 , sNaN",                  floatToRawInt(1.0f),    SNaN),
     ("maxSubnormal , minNormal",    MaxSubnrm,  MinNormal),
     ("minSubnormal , minSubnormal", MinSubnrm,  MinSubnrm),
-    ("2^24 , 1.0 (tie-to-even)",    TwoToThe24, f(1.0f)),
-    ("-1.0 , -2.0",                 f(-1.0f),   f(-2.0f)),
-    ("3.14 , 2.71",                 f(3.14f),   f(2.71f)),
+    ("2^24 , 1.0 (tie-to-even)",    TwoToThe24, floatToRawInt(1.0f)),
+    ("-1.0 , -2.0",                 floatToRawInt(-1.0f),   floatToRawInt(-2.0f)),
+    ("3.14 , 2.71",                 floatToRawInt(3.14f),   floatToRawInt(2.71f)),
   )
 }
 
@@ -70,9 +70,9 @@ class FP32UnitsCombSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
   private def runVectors(mode: FPOpMode.Mode): Unit = {
     simulate(new FPCombUnit(8, 24, mode)) { dut =>
       for ((label, aBits, bBits) <- vectors) {
-        val expected = canon(ref(mode, toF(aBits), toF(bBits)))
-        dut.io.in_a.poke(u32(aBits))
-        dut.io.in_b.poke(u32(bBits))
+        val expected = canonicalize(ref(mode, intToFloat(aBits), intToFloat(bBits)))
+        dut.io.in_a.poke(intToUInt32(aBits))
+        dut.io.in_b.poke(intToUInt32(bBits))
         expectHex(dut.io.out, expected, s"${opName(mode)}($label)")
       }
     }

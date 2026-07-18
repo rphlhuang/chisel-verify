@@ -22,8 +22,8 @@ class FP32UnitsSeqSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
   }
 
   private def enqueue(dut: FPSeqUnit, aBits: Int, bBits: Int, sqrtOp: Boolean, clue: String): Unit = {
-    dut.io.in.bits.a.poke(u32(aBits))
-    dut.io.in.bits.b.poke(u32(bBits))
+    dut.io.in.bits.a.poke(intToUInt32(aBits))
+    dut.io.in.bits.b.poke(intToUInt32(bBits))
     dut.io.in.bits.sqrtOp.poke(sqrtOp.B)
     dut.io.in.valid.poke(true.B)
     var cycles = 0
@@ -52,7 +52,7 @@ class FP32UnitsSeqSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
   "FPSeqUnit DIV" should "match IEEE-754 round-nearest-even on directed vectors" in {
     simulate(new FPSeqUnit(8, 24, FPOpMode.DIVSQRT)) { dut =>
       for ((label, aBits, bBits) <- vectors) {
-        val expected = canon(refSeq(toF(aBits), toF(bBits), sqrtOp = false))
+        val expected = canonicalize(refSeq(intToFloat(aBits), intToFloat(bBits), sqrtOp = false))
         enqueue(dut, aBits, bBits, sqrtOp = false, clue = s"DIV($label)")
         dequeue(dut, expected, s"DIV($label)")
       }
@@ -63,7 +63,7 @@ class FP32UnitsSeqSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
   "FPSeqUnit SQRT" should "match IEEE-754 round-nearest-even on directed vectors" in {
     simulate(new FPSeqUnit(8, 24, FPOpMode.DIVSQRT)) { dut =>
       for ((label, aBits, bBits) <- vectors) {
-        val expected = canon(refSeq(toF(aBits), toF(bBits), sqrtOp = true))
+        val expected = canonicalize(refSeq(intToFloat(aBits), intToFloat(bBits), sqrtOp = true))
         enqueue(dut, aBits, bBits, sqrtOp = true, clue = s"SQRT($label)")
         dequeue(dut, expected, s"SQRT($label)")
       }

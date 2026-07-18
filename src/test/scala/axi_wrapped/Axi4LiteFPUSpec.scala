@@ -26,8 +26,8 @@ class Axi4LiteFPUSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
       val opcode = FPUOpcode.ADD
 
       assert(bfm.writeVal(p.tag_w, tag) == 0, f"\nWrite $tag to tag_w failed")
-      assert(bfm.writeVal(p.a_w, f(a)) == 0, f"\nWrite $a to a_w failed")
-      assert(bfm.writeVal(p.b_w, f(b)) == 0, f"\nWrite $b to b_w failed")
+      assert(bfm.writeVal(p.a_w, floatToRawInt(a)) == 0, f"\nWrite $a to a_w failed")
+      assert(bfm.writeVal(p.b_w, floatToRawInt(b)) == 0, f"\nWrite $b to b_w failed")
       assert(bfm.writeVal(p.opcode_w, opcode) == 0, "\nWrite opcode ${opName(opcode)} to opcode_w failed")
 
       // wait for dut by querying outq_cnt_r
@@ -44,7 +44,7 @@ class Axi4LiteFPUSpec extends AnyFlatSpec with ChiselSim with FP32TestUtil {
       
       assert(bfm.writeVal(p.outq_pop_w, 0) == 0, "\nPop outq_pop_w failed")
       val result_r = bfm.readVal(p.result_r)
-      expectHex(result_r, f(a + b), f"\nADD($a, $b)")
+      expectHex(result_r, floatToRawInt(a + b), f"\nADD($a, $b)")
     }
   }
 
