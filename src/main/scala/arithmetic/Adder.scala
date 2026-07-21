@@ -16,19 +16,7 @@ class Adder(width: Int) extends Module {
     io.s := io.a +& io.b
 
     
-    AssertProperty((io.a === io.b) |-> (io.s(0) === 0.U), label = Some("equal_inputs_even_sum"))
-}
-
-object AdderMain extends App {
-  ChiselStage.emitSystemVerilogFile(
-    new Adder(8),
-    args = Array("--target-dir", "generated/arithmetic"),
-    firtoolOpts = Array(
-      "--disable-all-randomization",
-      "--strip-debug-info",
-      "--lowering-options=disallowLocalVariables,disallowPackedArrays",
-    ),
-  )
+    AssertProperty((io.a === io.b) |-> (io.s(0) === 0.U))
 }
 
 object AdderFormalMain extends App {
