@@ -15,8 +15,12 @@ class Adder(width: Int) extends Module {
 
     io.s := io.a +& io.b
 
-    
-    AssertProperty((io.a === io.b) |-> (io.s(0) === 0.U))
+    AssertProperty(io.s >= io.a)
+    AssertProperty(io.s >= io.b)
+    AssertProperty((io.a === io.b) |-> (io.s(0) === 0.U)) // equal operands give even sum
+
+    AssumeProperty(io.a <= 100.U && io.b <= 100.U)
+    AssertProperty(io.s <= 200.U)
 }
 
 object AdderFormalMain extends App {

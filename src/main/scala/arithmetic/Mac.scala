@@ -3,6 +3,8 @@ package arithmetic
 
 import chisel3._
 import chisel3.util._
+import chisel3.ltl._
+import chisel3.ltl.Sequence._
 import _root_.circt.stage.ChiselStage
 
 class MacIn(w: Int) extends Bundle {
@@ -62,6 +64,11 @@ class Mac(val width: Int, val accWidth: Int) extends Module {
       }
     }
   }
+  
+  AssertProperty(state =/= 3.U) // reachability: no 4th state
+  AssertProperty(io.out.valid |-> (state === sDone))
+  AssertProperty(io.out.valid |-> (io.out.bits === accReg))
+  AssertProperty(!(io.in.ready && io.out.valid))
 }
 
 object MacMain extends App {
@@ -73,5 +80,12 @@ object MacMain extends App {
       "--strip-debug-info",
       "--lowering-options=disallowLocalVariables,disallowPackedArrays",
     ),
+  )
+}
+
+object MacChirrtlMain extends App {
+  ChiselStage.emitCHIRRTLFile(
+    new Mac(width = 8, accWidth = 32),
+    args = Array("--target-dir", "generated/arithmetic/chirrtl")
   )
 }
