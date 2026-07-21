@@ -22,7 +22,7 @@
 
 ## User context that shapes everything
 
-- Master's research aide at Argonne (mentor: Kaz Yoshii). Wants **formal-methods
+- Master's research aide at Argonne. Wants **formal-methods
   learning** as a first-class outcome — tempo/DESIGN.md has a component↔concept
   curriculum table; keep extending it and keep the human doing the formal reasoning.
 - Not attached to FP (fpdiff's substrate); is attached to HITL, open tooling,
