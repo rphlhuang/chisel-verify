@@ -2,7 +2,7 @@
 
 A sandbox for hardware verification of parameterized Chisel modules with ChiselTest and cocotb.
 ChiselTest suites under `src/test/scala/`, and cocotb testbenches under `tests/<Module>/`.
-Each DUT is elaborated to SystemVerilog in `generated/<pkg>/` via `sbt runMain`.
+Each DUT is elaborated to SystemVerilog in `generated/<pkg>/` via `make gen`.
 
 ## Requirements
 Install all requirements from `requirements.txt` and submodule python library (note that Python version must be <= 3.13):
