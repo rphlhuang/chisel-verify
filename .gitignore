@@ -20,13 +20,10 @@ tests/*/*/*.log
 # python
 venv/
 
-<<<<<<< HEAD
 # macos
 .DS_STORE
 
 # claude
 .claude/
-=======
 # local agent context
 context/
->>>>>>> 717a696 (sby work)
