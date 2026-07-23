@@ -4,7 +4,6 @@ package formal
 import chisel3._
 import chisel3.util.log2Ceil
 
-/** Helpers for the Chisel -> CHIRRTL -> BTOR2 -> btormc formal flow. */
 object FormalUtils {
 
   /** Reset-aligned warm-up mask for guarding past(n).
