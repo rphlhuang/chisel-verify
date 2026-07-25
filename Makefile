@@ -18,8 +18,13 @@ FIRTOOL      ?= firtool
 BTORMC       ?= btormc
 BTOR2_LAYERS ?= Verification,Verification.Assert,Verification.Assume
 FORMAL_LOG   ?= generated/formal-summary.log
+# btormc is a BOUNDED model checker (its own default is -kmax 20). Make the bound
+# explicit so the log records what a result was actually bounded by, and so it can
+# be raised per-run:  make mallet KMAX=60
+KMAX         ?= 20
+MALLET_LOG   ?= generated/mallet-report.log
 
-.PHONY: all chiselsim cocotb gen formal formal-gen btor2 clean extraclean help
+.PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet clean extraclean help
 
 all: chiselsim cocotb
 
@@ -29,6 +34,8 @@ help:
 	@echo "  cocotb     - run every cocotb testbench under tests/"
 	@echo "  gen        - re-elaborate every Chisel App to SystemVerilog"
 	@echo "  formal     - lower every *ChirrtlMain design to BTOR2 and BMC it (btormc)"
+	@echo "  mallet     - per-property formal report (needs a mallet props sidecar)"
+	@echo "               KMAX=<n> sets the btormc bound (default $(KMAX)) for formal+mallet"
 	@echo "  clean      - clean generated SV, cocotb sim outputs, sbt target"
 
 chiselsim:
@@ -73,7 +80,7 @@ formal: formal-gen
 	  elif [ "$$bad" -eq 0 ]; then \
 	    verdict=SKIP; note="no assertion reached btor2 (all folded/vacuous)"; t_skip=$$((t_skip+1)); \
 	  else \
-	    wit=$$($(BTORMC) "$$base.btor2" 2> "$$base.mc.log"); rc=$$?; \
+	    wit=$$($(BTORMC) -kmax $(KMAX) "$$base.btor2" 2> "$$base.mc.log"); rc=$$?; \
 	    if [ "$$rc" -ne 0 ]; then verdict=ERROR; note="btormc rc=$$rc: $$(head -1 "$$base.mc.log")"; fail=1; t_err=$$((t_err+1)); \
 	    elif [ -n "$$wit" ]; then verdict=FAIL; note="counterexample below"; fail=1; t_fl=$$((t_fl+1)); \
 	      { echo "--- $$name btormc counterexample ---"; printf '%s\n' "$$wit" | sed 's/^/    /'; } >> "$$det"; \
@@ -92,7 +99,7 @@ formal: formal-gen
 	mkdir -p "$$(dirname "$(FORMAL_LOG)")"; \
 	{ \
 	echo "================ make formal @ $$(date '+%Y-%m-%d %H:%M:%S') ================"; \
-	echo "chisel $$CH | $$FT | layers=$(BTOR2_LAYERS)"; \
+	echo "chisel $$CH | $$FT | kmax=$(KMAX) | layers=$(BTOR2_LAYERS)"; \
 	echo "---------------------------------------------------------------"; \
 	printf '  %-16s %3s %3s %4s %5s %5s  %-7s %s\n' MODULE src hw bad fold res VERDICT NOTES; \
 	cat "$$tbl"; \
@@ -101,12 +108,24 @@ formal: formal-gen
 	  "$$nmod" "$$t_hw" "$$t_bad" "$$t_fold" "$$t_res" "$$t_pass" "$$t_fl" "$$t_skip" "$$t_err"; \
 	echo "  src=AssertProperty(source)  hw=clocked_assert(--ir-hw)  bad=btor2 asserts"; \
 	echo "  fold=folded in lowering(hw-bad)  res=unlowered leak"; \
+	echo "  PASS = no counterexample within $(KMAX) cycles (bounded), NOT a proof"; \
 	if [ -s "$$det" ]; then echo; cat "$$det"; fi; \
 	} | tee -a "$(FORMAL_LOG)"; \
 	rm -f "$$tbl" "$$det"; \
 	echo "  (appended to $(FORMAL_LOG))"; \
 	echo; \
 	exit $$fail
+
+# per-PROPERTY report: names each property, says where it died, prints its
+# English rendering next to the verdict. Complementary to `formal`, which is a
+# per-module census. Only designs that emitted a mallet props sidecar appear.
+mallet: formal-gen
+	@mkdir -p "$$(dirname "$(MALLET_LOG)")"; \
+	out=$$(mktemp); \
+	bash scripts/mallet_report.sh 1 $(KMAX) 'generated/*/chirrtl/*.fir' > "$$out" 2>&1; rc=$$?; \
+	tee -a "$(MALLET_LOG)" < "$$out"; rm -f "$$out"; \
+	echo "  (appended to $(MALLET_LOG))"; \
+	exit $$rc
 
 cocotb:
 	@for dir in $(COCOTB_DIRS); do \
