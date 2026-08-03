@@ -19,6 +19,7 @@ tests/*/*/*.log
 
 # python
 venv/
+__pycache__/
 
 # macos
 .DS_STORE

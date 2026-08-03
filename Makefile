@@ -22,9 +22,12 @@ FORMAL_LOG   ?= generated/formal-summary.log
 # explicit so the log records what a result was actually bounded by, and so it can
 # be raised per-run:  make mallet KMAX=60
 KMAX         ?= 20
+# Per-job wall-clock bound (seconds) for the mallet matrix. A timeout is a
+# verdict (TIMEOUT), never a hang -- applied uniformly to every engine.
+TIMEOUT      ?= 120
 MALLET_LOG   ?= generated/mallet-report.log
 
-.PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet clean extraclean help
+.PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet mallet-legacy clean extraclean help
 
 all: chiselsim cocotb
 
@@ -116,10 +119,12 @@ formal: formal-gen
 	echo; \
 	exit $$fail
 
-# per-PROPERTY report: names each property, says where it died, prints its
-# English rendering next to the verdict. Complementary to `formal`, which is a
-# per-module census. Only designs that emitted a mallet props sidecar appear.
 mallet: formal-gen
+	@mkdir -p "$$(dirname "$(MALLET_LOG)")"
+	python3 scripts/mallet/run.py --kmax $(KMAX) --timeout $(TIMEOUT) 'generated/*/chirrtl/*.fir'
+
+# old bash script
+mallet-legacy: formal-gen
 	@mkdir -p "$$(dirname "$(MALLET_LOG)")"; \
 	out=$$(mktemp); \
 	bash scripts/mallet_report.sh 1 $(KMAX) 'generated/*/chirrtl/*.fir' > "$$out" 2>&1; rc=$$?; \
