@@ -27,7 +27,7 @@ KMAX         ?= 20
 TIMEOUT      ?= 120
 MALLET_LOG   ?= generated/mallet-report.log
 
-.PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet mallet-legacy clean extraclean help
+.PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet clean extraclean help
 
 all: chiselsim cocotb
 
@@ -122,15 +122,6 @@ formal: formal-gen
 mallet: formal-gen
 	@mkdir -p "$$(dirname "$(MALLET_LOG)")"
 	python3 scripts/mallet/run.py --kmax $(KMAX) --timeout $(TIMEOUT) 'generated/*/chirrtl/*.fir'
-
-# old bash script
-mallet-legacy: formal-gen
-	@mkdir -p "$$(dirname "$(MALLET_LOG)")"; \
-	out=$$(mktemp); \
-	bash scripts/mallet_report.sh 1 $(KMAX) 'generated/*/chirrtl/*.fir' > "$$out" 2>&1; rc=$$?; \
-	tee -a "$(MALLET_LOG)" < "$$out"; rm -f "$$out"; \
-	echo "  (appended to $(MALLET_LOG))"; \
-	exit $$rc
 
 cocotb:
 	@for dir in $(COCOTB_DIRS); do \
