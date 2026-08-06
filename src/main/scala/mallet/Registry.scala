@@ -4,6 +4,30 @@ package mallet
 import chisel3._
 import scala.collection.mutable
 import java.security.MessageDigest
+import chisel3.util.log2Ceil
+
+object FormalUtils {
+  /** Reset-aligned warm-up mask for guarding past(n).
+    * Returns false for first n cycles after reset deasserts and true thereafter.
+    *
+    * This is needed because CIRCT lowers ltl.past to a seq.shiftreg with NO reset, 
+    * so the shift register keeps sampling while the circuit is held in reset. 
+    * The first post-reset cycle therefore sees a past-value
+    * from a cycle that never legitimately happened, and "past(a) |-> b"
+    * fires a spurious counterexample at that boundary.
+    * 
+    * Example: AssertProperty( warmedUp(1).and(io.in.fire.past(1)) |-> (state === sCompute) )
+    */
+  def warmedUp(n: Int): Bool = {
+    require(n >= 0, "warm-up depth must be non-negative")
+    if (n == 0) true.B
+    else {
+      val c = RegInit(0.U(log2Ceil(n + 1).W))
+      when(c =/= n.U) { c := c + 1.U }
+      c === n.U
+    }
+  }
+}
 
 /** Collects the properties elaborated across a run and writes the sidecar that
   * lets the shell-side report attribute a BTOR2 verdict back to an English
@@ -135,7 +159,7 @@ trait MalletProperties { this: chisel3.Module =>
   private val warmCache = mutable.Map.empty[Int, Bool]
 
   private def warm(n: Int): Bool =
-    if (n == 0) true.B else warmCache.getOrElseUpdate(n, formal.FormalUtils.warmedUp(n))
+    if (n == 0) true.B else warmCache.getOrElseUpdate(n, FormalUtils.warmedUp(n))
 
   /** Elaborate the given properties.
     *
