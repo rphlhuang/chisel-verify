@@ -31,6 +31,46 @@ To facilitate formal verification for a multiplicity of common communication pro
 
 - AMBA AXI-Lite, 32-bit <-- axi.HasAxiLite32IO from `chisel-axi-utils`
 
+### Basics: Annotating the Memory Map
+
+With `mallet`, many manually-written formal properties can be automatically generated from *design annotations* instead, which automatically generate syntactically correct properties proven to lower down to the formal engines (many common SVA properties like |=> cannot be parsed by open-source formal tools). A `mallet` spec is a subclass of your DUT (so every internal signal is already in scope) that mixes in `MalletSpec`, and it reads like the comments you'd already put on a memory map:
+
+```scala
+class MacSpec(p: MacModuleParams) extends Axi4LiteMac(p) with MalletSpec {
+  p.a_w           is Operand at aReg
+  p.b_w           is Operand at bReg
+  p.push_w        is Commit  at pushPendingReg requiring (aReg, bReg) acceptedOn dut.io.in.ready
+  p.status_r      is Status  at dutValidReg
+  p.result_r      is Result  at dutDataReg validWhen dutValidReg
+  p.soft_reset_rw is RW
+
+  S.AXI conformsTo AxiLite32Slave
+
+  property("soft_reset_is_pulse") { srPulse |=> !srPulse }
+  property("result_not_dropped")  { dut.io.out.fire |=> dutValidReg }
+
+  done()
+}
+```
+
+The address is the subject of every line, so the left column reads top-to-bottom as the memory map itself. Each line adds its properties and corresponding registers to a queue, and `done()` flushes them all at the end. Because the properties are rendered from the design, design-spec naming and typing drift is a compile-time error rather than a runtime one. For example:
+
+- `is` is only defined on `Long`, and `chisel-axi-utils` types addresses as `Long` and dimensions as `Int`, so `p.width_p is Operand` won't typecheck -- you can only annotate a real address.
+- The `at <signal>` clause carries the actual typed Chisel signal instead of a string. `Operand`/`Result` demand a multi-bit `UInt`; `Status`/`Commit` demand a `Bool`. Roles with incorrectly-typed signals won't compile, and renamed or deleted registers won't compile.
+
+A **role** is a memory-map access mode plus a meaning. The **access modes** are `RO`, `WO`, `RW`, `W1C`. A role refines one of these and emits properties automatically:
+
+| Role | Implies | Subject | Emits... |
+| ---- | ------- | ------- | -------- |
+| `Operand` | WO | operand register | declares the operand (consumed by `requiring`) |
+| `Commit`  | W  | pending flag | pending retires once accepted; every `requiring` operand was written since reset |
+| `Status`  | RO | status bit | a read of the address returns the bit |
+| `Result`  | RO | data register | a read returns the data; reading clears the valid flag |
+
+Note that an address can also carry a bare access mode with no role (`p.soft_reset_rw is RW`), which just documentation (for now).
+
+`S.AXI conformsTo AxiLite32Slave` stands in for the whole protocol contract from the section above. Manually written temporal logic (a la Chisel `AssertProperty()`) can be written via `property(name) { ... }` with the added benefit of `|=>` support,  warm-up masking to prevent counterexamples before reset, and the fragment guards for free.
+
 ### Basics: Adjudication
 
 A `mallet` run queues up threads for each {property, backend engine} combination, and reports them in an *adjudication matrix*. After all combinations have executed or the timeout (default: 120s) is reached, the matrix is populated with the results from each backend. These results combine to compose a verdict for each property, which can take one of the following values:

@@ -5,7 +5,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.ltl._
 import chisel3.ltl.Sequence._
-import formal.FormalUtils._
+import mallet.FormalUtils._
 import _root_.circt.stage.ChiselStage
 
 class MacIn(w: Int) extends Bundle {
@@ -13,17 +13,6 @@ class MacIn(w: Int) extends Bundle {
   val b    = UInt(w.W)
   val last = Bool()
 }
-
-/** 
-  * AI GENERATED [Claude Opus 4.7]
-  *
-  * Consumes a stream of (a, b, last) beats over a Decoupled input.
-  * Each beat takes 2 cycles: one to capture operands, one to add a*b
-  * into the accumulator. On a beat with `last` asserted, the current
-  * accumulator value is presented on the Decoupled output and held
-  * until the consumer accepts it. Accepting the output resets the
-  * accumulator, and the MAC is ready for a new dot-product.
-  */
 
 class Mac(val width: Int, val accWidth: Int) extends Module {
   require(accWidth >= 2 * width, "accWidth must hold at least one full product")
