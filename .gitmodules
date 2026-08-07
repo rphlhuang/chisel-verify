@@ -6,4 +6,4 @@
 	url = https://github.com/ucb-bar/berkeley-hardfloat.git
 [submodule "rial"]
 	path = rial
-	url = https://github.com/mdgrape/rial
+	url = https://github.com/hwspec/rial-tmpfix

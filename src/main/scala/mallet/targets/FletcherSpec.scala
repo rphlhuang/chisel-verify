@@ -5,15 +5,15 @@ import chisel3._
 import _root_.circt.stage.ChiselStage
 
 import mallet._
-import axi_wrapped.{Axi4LiteCRC, CRCModuleParams}
+import axi_wrapped.{Axi4LiteFletcher, FletcherModuleParams}
 
-
-class CRCSpec(p: CRCModuleParams) extends Axi4LiteCRC(p) with MalletSpec {
+class FletcherSpec(p: FletcherModuleParams) extends Axi4LiteFletcher(p) with MalletSpec {
 
   // ── memory-map roles ─────────────────────────────────────────────
-  p.x_w           is Operand at xReg
-  p.ri_w          is Commit  at riReg
-  p.ro_r          is Result  at dutDataReg // valid always?
+  p.data_w        is Operand at dataReg
+  p.push_w        is Commit  at pushPendingReg requiring (dataReg) acceptedOn dut.io.in.ready
+  p.status_r      is Status  at dutValidReg
+  p.result_r      is Result  at dutDataReg validWhen dutValidReg
   p.soft_reset_rw is RW
 
   // ── protocol contract ────────────────────────────────────────────
@@ -27,13 +27,13 @@ class CRCSpec(p: CRCModuleParams) extends Axi4LiteCRC(p) with MalletSpec {
   done()
 }
 
-object CRCSpecChirrtlMain extends App {
-  val p = CRCModuleParams.default()
+object FletcherSpecChirrtlMain extends App {
+  val p = FletcherModuleParams.default()
 
   MalletRegistry.clear()
   MalletRegistry.coversEnabled = false
   ChiselStage.emitCHIRRTLFile(
-    new CRCSpec(p),
+    new FletcherSpec(p),
     args = Array("--target-dir", "generated/mallet/chirrtl")
   )
   MalletRegistry.writeSidecar("generated/mallet/props")
@@ -41,7 +41,7 @@ object CRCSpecChirrtlMain extends App {
   MalletRegistry.clear()
   MalletRegistry.coversEnabled = true
   ChiselStage.emitCHIRRTLFile(
-    new CRCSpec(p),
+    new FletcherSpec(p),
     args = Array("--target-dir", "generated/mallet/reach")
   )
   MalletRegistry.coversEnabled = false

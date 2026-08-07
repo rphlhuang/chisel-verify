@@ -8,8 +8,8 @@ import axi.{AxiLite32, HasAxiLite32IO}
 import axi.AxiLiteResp.OKAY
 import mallet.contract.{AxiLite32Contract, ContractSet}
 
-/** The infix interface, a subclass of the DUT.
-  *
+/** The infix syntax as an interface.
+  * Subclass of the DUT (the only way I could think of doing it cleanly).
   * MalletSpec adds no new lowering, just convenience.
   *
   * done() is a workaround due to how Chisel rendering works;
@@ -78,18 +78,18 @@ trait MalletSpec extends MalletProperties { this: chisel3.Module with HasAxiLite
     def at(sig: Bool): Unit = stage(StatusSpec(addr, sig), f"0x$addr%02x  Status  (RO)")
   }
   protected class ResultBuilder(addr: Long) {
-    def at[T <: UInt](sig: T)(implicit ev: UIntBacking[T]): ResultAt = new ResultAt(addr, sig)
+    def at[T <: UInt](sig: T)(implicit ev: UIntBacking[T]): ResultNeedsValidWhen = new ResultNeedsValidWhen(addr, sig)
   }
-  protected class ResultAt(addr: Long, sig: UInt) {
+  protected class ResultNeedsValidWhen(addr: Long, sig: UInt) {
     def validWhen(v: Bool): Unit = stage(ResultSpec(addr, sig, v), f"0x$addr%02x  Result  (RO)")
   }
   protected class CommitBuilder(addr: Long) {
-    def at(sig: Bool): CommitAt = new CommitAt(addr, sig)
+    def at(sig: Bool): CommitNeedsRequiring = new CommitNeedsRequiring(addr, sig)
   }
-  protected class CommitAt(addr: Long, pending: Bool) {
-    def requiring(sigs: UInt*): CommitRequiring = new CommitRequiring(addr, pending, sigs)
+  protected class CommitNeedsRequiring(addr: Long, pending: Bool) {
+    def requiring(sigs: UInt*): CommitNeedsAcceptedOn = new CommitNeedsAcceptedOn(addr, pending, sigs)
   }
-  protected class CommitRequiring(addr: Long, pending: Bool, requires: Seq[UInt]) {
+  protected class CommitNeedsAcceptedOn(addr: Long, pending: Bool, requires: Seq[UInt]) {
     def acceptedOn(k: Bool): Unit = stage(CommitSpec(addr, pending, requires, k), f"0x$addr%02x  Commit  (W)")
   }
 
@@ -141,7 +141,7 @@ trait MalletSpec extends MalletProperties { this: chisel3.Module with HasAxiLite
     )
   }
 
-  // "pending clears once accepted" + "commit fires only with every operand written since reset"
+  // ("pending clears once accepted", asserted) + for upstream, ("commit fires only with every operand written since reset", assumed)
   private def commitRole(addr: Long, pending: Bool, requires: Seq[UInt], accepted: Bool): Seq[NamedProp] = {
     val axi = S.AXI
     val hex = f"0x$addr%x"
@@ -161,7 +161,7 @@ trait MalletSpec extends MalletProperties { this: chisel3.Module with HasAxiLite
       when(bRise && (axi.bresp === OKAY.U) && (awAddr === a.U)) { w := true.B }
       B(w, f"written_0x$a%x"): Expr
     }
-    val operandsWritten = NamedProp.assert(
+    val operandsWritten = NamedProp.assume(
       s"gen_commit_operands_written_$hex",
       B(pending, "pending") ==> written.reduce(_ && _),
       s"a commit at $hex fires only with every operand written since reset"

@@ -121,7 +121,10 @@ formal: formal-gen
 
 mallet: formal-gen
 	@mkdir -p "$$(dirname "$(MALLET_LOG)")"
-	python3 scripts/mallet/run.py --kmax $(KMAX) --timeout $(TIMEOUT) 'generated/*/chirrtl/*.fir'
+	python3 scripts/mallet/run.py --kmax $(KMAX) --timeout $(TIMEOUT) 'generated/*/chirrtl/*.fir'; rc=$$?; \
+	python3 scripts/mallet_dashboard.py; \
+	echo "  dashboard: file://$$(pwd)/generated/mallet-dashboard.html"; \
+	exit $$rc
 
 cocotb:
 	@for dir in $(COCOTB_DIRS); do \

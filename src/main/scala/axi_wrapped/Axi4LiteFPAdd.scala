@@ -1,6 +1,6 @@
 package axi_wrapped
 
-import fp.
+import fp._
 
 import axi._
 import axi.AxiLiteResp._
@@ -15,12 +15,14 @@ case class FPAddModuleParams( // Note: do not put default value here
                             // DefParams
                             soft_reset_rw : Long,
                             // module params
-                            poly_coeff_p : Int, // coefficients of generator polynomial (with highest order)
-                            width_p : Int,
+                            width_p : Int,    // operand width  (expW + sigW, 32 for FP32)
+                            accWidth_p : Int, // result width   (32 for FP32)
                             // io
-                            x_w : Long,
-                            ri_w : Long,
-                            ro_r : Long,
+                            a_w : Long,      // write: operand a
+                            b_w : Long,      // write: operand b
+                            push_w : Long,   // write: submit a and b for the add, 0b1 if last
+                            result_r : Long, // read:  result of the add
+                            status_r : Long, // read:  0b1 if result_r is valid
                             // constant definition
                             reset_cycles : Int // soft reset cycles
                           ) extends AxiModuleParams with AxiModuleDefParams
@@ -31,11 +33,47 @@ case class FPAddModuleParams( // Note: do not put default value here
 object FPAddModuleParams {
   implicit val rw: ReadWriter[FPAddModuleParams] = macroRW
 
-  def default(poly_coeff_p: Int, width_p: Int = 8) : FPAddModuleParams =
+  // FP32 single precision: 8 exp + 24 sig = 32-bit operands and result.
+  def default(width_p: Int = 32, accWidth_p: Int = 32) : FPAddModuleParams =
     new FPAddModuleParams(
-      x_w = 0x0, ri_w = 0x4, ro_r = 0x8, soft_reset_rw = 0x12,
-      poly_coeff_p = poly_coeff_p, width_p = width_p, reset_cycles = 1
+      soft_reset_rw = 0x0, a_w = 0x10, b_w = 0x14, push_w = 0x20, result_r = 0x24, status_r = 0x28,
+      width_p = width_p, accWidth_p = accWidth_p, reset_cycles = 1
     )
+}
+
+/** Decoupled input bundle for [[FPAddUnit]]: operands `a`, `b` and an (unused here) `last` flag. */
+class FPAddIn(val bw: Int) extends Bundle {
+  val a    = UInt(bw.W)
+  val b    = UInt(bw.W)
+  val last = Bool()
+}
+
+class FPAddUnit(expW: Int = 8, sigW: Int = 24) extends Module {
+  val bw   = expW + sigW
+  val core = Module(new FPCombUnit(expW, sigW, FPOpMode.ADD))
+
+  val io = IO(new Bundle {
+    val in  = Flipped(Decoupled(new FPAddIn(bw)))
+    val out = Decoupled(UInt(bw.W))
+  })
+
+  val busy   = RegInit(false.B)
+  val resReg = Reg(UInt(bw.W))
+
+  core.io.in_a := io.in.bits.a
+  core.io.in_b := io.in.bits.b
+
+  io.in.ready := !busy
+  when(io.in.fire) {
+    resReg := core.io.out
+    busy   := true.B
+  }
+
+  io.out.valid := busy
+  io.out.bits  := resReg
+  when(io.out.fire) {
+    busy := false.B
+  }
 }
 
 class Axi4LiteFPAdd(p : FPAddModuleParams, debugprint: Boolean = false)
@@ -46,7 +84,7 @@ class Axi4LiteFPAdd(p : FPAddModuleParams, debugprint: Boolean = false)
   // -----------------------------
   // AXI-lite regs
   // -----------------------------
-  
+
   val awHoldValidReg = RegInit(false.B)
   val awHoldAddrReg = Reg(UInt(32.W))
   val wHoldValidReg = RegInit(false.B)
@@ -60,12 +98,12 @@ class Axi4LiteFPAdd(p : FPAddModuleParams, debugprint: Boolean = false)
 
   // -----------------------------
   // Instantiate FPAdd DUT and regs
-  // -----------------------------  
-  
+  // -----------------------------
+
   val softResetPulseReg = RegInit(false.B) // soft reset: when doWrite and write addr
   softResetPulseReg := (doWrite && (awHoldAddrReg === p.soft_reset_rw.U) && (wHoldStrbReg === "b1111".U))
   val combinedReset = (softResetPulseReg || reset.asBool) // reset if whole module reset OR dut-only soft reset
-  val dut = withReset(combinedReset) {Module(new FPCombUnit())}
+  val dut = withReset(combinedReset) {Module(new FPAddUnit())}
 
   val aReg = Reg(UInt(p.width_p.W))
   val bReg = Reg(UInt(p.width_p.W))
@@ -98,9 +136,9 @@ class Axi4LiteFPAdd(p : FPAddModuleParams, debugprint: Boolean = false)
     val a = awHoldAddrReg
     val bresp = WireDefault(OKAY.U)
 
-    when (!fullWrite) { 
+    when (!fullWrite) {
       bresp := SLVERR.U // support full write only for this example
-    }.otherwise { 
+    }.otherwise {
       // if not strobe or reset, write to internal reg or start calc
       when(a === p.a_w.U) {
         aReg := wHoldDataReg
@@ -190,7 +228,7 @@ object Axi4LiteFPAddMain extends App {
 
   val p = checkParamEnv(
     FPAddModuleParams.default(),
-    "MAC_MODULE_PARAMS")
+    "FPADD_MODULE_PARAMS")
 
   EmitVerilog.generate(new Axi4LiteFPAdd(p, debugprint=true), p)
 }
