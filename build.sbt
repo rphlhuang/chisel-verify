@@ -18,7 +18,10 @@ lazy val root = (project in file("."))
     Compile / unmanagedSourceDirectories ++= Seq(
       baseDirectory.value / "chisel-axi-utils" / "src" / "main" / "scala",
       baseDirectory.value / "berkeley-hardfloat" / "hardfloat" / "src" / "main" / "scala",
+      // baseDirectory.value / "rial" / "src" / "main" / "scala",
     ),
+    // TEMP [Claude]: Axi4LiteCRC is WIP + depends on the broken rial submodule; exclude so the mallet flow compiles
+    Compile / unmanagedSources / excludeFilter := HiddenFileFilter || "Axi4LiteCRC.scala",
     scalacOptions ++= Seq(
       "-language:reflectiveCalls",
       "-deprecation",

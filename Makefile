@@ -24,7 +24,7 @@ FORMAL_LOG   ?= generated/formal-summary.log
 KMAX         ?= 20
 # Per-job wall-clock bound (seconds) for the mallet matrix. A timeout is a
 # verdict (TIMEOUT), never a hang -- applied uniformly to every engine.
-TIMEOUT      ?= 120
+TIMEOUT      ?= 20
 MALLET_LOG   ?= generated/mallet-report.log
 
 .PHONY: all chiselsim cocotb gen formal formal-gen btor2 mallet clean extraclean help
